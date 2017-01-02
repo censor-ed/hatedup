@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1' name='viewport'>
+    <title>hatedup</title>
+    <link href="/hatedup/stylesheets/umi.css" rel="stylesheet" />
+    <link href="/hatedup/stylesheets/style.css" rel="stylesheet" />
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+  </head>
+  <body>
+    <nav class='navbar navbar-default'>
+      <div class='container'>
+        <div class='navbar-header'>
+          <button aria-expanded='false' class='navbar-toggle collapsed' data-target='#nav-content' data-toggle='collapse' type='button'>
+            <span class='icon-bar'></span>
+            <span class='icon-bar'></span>
+            <span class='icon-bar'></span>
+          </button>
+          <a class='navbar-brand' href='/hatedup/'>
+            Hatedup
+          </a>
+        </div>
+        <div class='collapse navbar-collapse' id='nav-content'>
+          <ul class='nav navbar-nav navbar-right'>
+            <li>
+              <a href='https://chrome.google.com/webstore/detail/はてブうんち/einlcfmblienpmgppjmgahhpamkgjohi?hl=ja' target='_blank'>
+                <i class='fa fa-external-link'></i>
+                はてブうんち
+              </a>
+            </li>
+            <li>
+              <a href='https://twitter.com/surugaya_cheki' target='_blank'>
+                <i class='fa fa-twitter'></i>
+                連絡先
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class='container'>
+      <div id='app'>
+        <div class='alert alert-info text-center' v-if="$route.path == '/'">
+          はてなブックマークのコメントを比較し、重複するユーザーのコメントを抽出します。
+          ブコメのページではなく元のページのURLを張り付けてね。
+        </div>
+        <div class='row'>
+          <div class='col-md-5 col-xs-5'>
+            <div class='form-group'>
+              <input class='form-control' placeholder='http://' type='text' v-model='a'>
+            </div>
+          </div>
+          <div class='col-md-2 col-xs-2'>
+            <div class='row'>
+              <div class='col-md-9 squish col-xs-12'>
+                <button @click='compare' class='btn btn-danger btn-block'>
+                  <i class='fa fa-compress'></i>
+                  比較
+                </button>
+              </div>
+              <div class='col-md-3 squish hidden-xs'>
+                <button @click='exchange' class='btn btn-success btn-block' title='入れ替え'>
+                  <i class='fa fa-exchange'></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class='col-md-5 col-xs-5'>
+            <div class='form-group'>
+              <input class='form-control' placeholder='http://' type='text' v-model='b'>
+            </div>
+          </div>
+        </div>
+        <router-view :a='a' :b='b'></router-view>
+        <template id='hotentry'>
+          <div class='row'>
+            <div class='col-md-8 col-md-offset-2'>
+              <div class='panel panel-default'>
+                <div class='panel-heading'>
+                  <h2 class='h3'>ホットエントリ (2017/1/2)</h2>
+                </div>
+                <ul class='list-group'>
+                  <li class='list-group-item' v-for='entry in entries'>
+                    <div class='row'>
+                      <div class='col-md-1 text-center'>
+                        <i :class="{'text-danger': entry.url === a, 'text-muted': entry.rul !== a}" @click='updateA(entry.url)' class='fa fa-thumb-tack pointer'></i>
+                      </div>
+                      <div class='col-md-10 abbrev'>
+                        <a :href='entry.url' target='_blank'>{{entry.title}}</a>
+                      </div>
+                      <div class='col-md-1 text-center'>
+                        <i :class="{'text-danger': entry.url === b, 'text-muted': entry.rul !== a}" @click='updateB(entry.url)' class='fa fa-thumb-tack pointer'></i>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </template>
+        <template id='compare'>
+          <div class='row vcenter info'>
+            <div class='col-md-5 col-xs-5'>
+              <h2 class='h3' v-if='entryA &amp;&amp; entryA.bookmarks.length'>
+                <input title='すべてのコメントを表示' type='checkbox' v-model='allA'>
+                <a :href='entryA.entry_url'>
+                  {{entryA.title}}
+                </a>
+                <span class='badge'>
+                  {{comments(entryA.bookmarks).length}}
+                </span>
+              </h2>
+              <div class='text-danger text-center' v-if='!loadingA &amp;&amp; (!entryA || !entryA.bookmarks.length)'>
+                ブックマークされていません
+              </div>
+              <div class='text-center' v-if='loadingA'>
+                <i class='fa fa-refresh'></i>
+              </div>
+            </div>
+            <div class='col-md-2 col-xs-2'>
+              <input class='form-control' placeholder='フィルタ' type='text' v-if='entryA.bookmarks &amp;&amp; entryB.bookmarks' v-model='filter' v-on:keyup.enter='setFilter'>
+            </div>
+            <div class='col-md-5 col-xs-5'>
+              <h2 class='h3' v-if='entryB &amp;&amp; entryB.bookmarks.length'>
+                <input title='すべてのコメントを表示' type='checkbox' v-model='allB'>
+                <a :href='entryB.entry_url'>
+                  {{entryB.title}}
+                </a>
+                <span class='badge'>
+                  {{comments(entryB.bookmarks).length}}
+                </span>
+              </h2>
+              <div class='text-danger text-center' v-if='!loadingB &amp;&amp; (!entryB || !entryB.bookmarks.length)'>
+                ブックマークされていません
+              </div>
+              <div class='text-center' v-if='loadingB'>
+                <i class='fa fa-refresh'></i>
+              </div>
+            </div>
+          </div>
+          <div class='bookmarks'>
+            <div class='row' v-for='bookmark in bookmarks | filterBy filtered'>
+              <div class='col-md-5 col-xs-5'>
+                <b :title='bookmark.a.timestamp'>{{ bookmark.a.comment }}</b>
+              </div>
+              <div class='col-md-2 text-center text-danger col-xs-2 abbrev'>
+                <a href='http://b.hatena.ne.jp/{{bookmark.a.user}}'>
+                  {{ bookmark.a.user }}
+                </a>
+              </div>
+              <div class='col-md-5 col-xs-5'>
+                <b :title='bookmark.b.timestamp'>{{ bookmark.b.comment }}</b>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/vue-router/0.7.13/vue-router.js"></script>
+    <script src="//code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.js"></script>
+    <script src="/hatedup/javascripts/all.js"></script>
+  </body>
+</html>

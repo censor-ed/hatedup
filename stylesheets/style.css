@@ -1,0 +1,55 @@
+/* line 1, /Projects/hatedup/source/stylesheets/style.sass */
+h2 {
+  margin: 0 !important; }
+  /* line 3, /Projects/hatedup/source/stylesheets/style.sass */
+  h2 a {
+    word-break: break-all; }
+
+/* line 5, /Projects/hatedup/source/stylesheets/style.sass */
+.info {
+  margin-bottom: 10px; }
+
+/* line 8, /Projects/hatedup/source/stylesheets/style.sass */
+.bookmarks > .row {
+  padding: 10px 5px;
+  display: flex;
+  align-items: center; }
+  /* line 12, /Projects/hatedup/source/stylesheets/style.sass */
+  .bookmarks > .row:nth-child(odd) {
+    background-color: #FFF; }
+
+/* line 14, /Projects/hatedup/source/stylesheets/style.sass */
+.vcenter {
+  display: flex;
+  align-items: center; }
+
+/* line 18, /Projects/hatedup/source/stylesheets/style.sass */
+.squish {
+  padding: 0; }
+
+/* line 21, /Projects/hatedup/source/stylesheets/style.sass */
+.abbrev {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis; }
+
+/* line 26, /Projects/hatedup/source/stylesheets/style.sass */
+.fa-refresh {
+  animation: spin 1.5s linear infinite;
+  font-size: 25vw !important;
+  color: white;
+  text-shadow: black 0 0 3px;
+  padding: 30px; }
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+    text-shadow: black 0 0 3px; }
+  50% {
+    text-shadow: gray 0 0 3px; }
+  100% {
+    transform: rotate(360deg);
+    text-shadow: black 0 0 3px; } }
+/* line 43, /Projects/hatedup/source/stylesheets/style.sass */
+.pointer {
+  cursor: pointer; }
